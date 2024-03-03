@@ -1,24 +1,30 @@
-import React from 'react'
+import React from "react";
 import styles from "./Blog.module.css";
-import PostCard from '@/components/postCard/PostCard';
+import PostCard from "@/components/postCard/PostCard";
 
-const BlogPage = () => {
+const getData = async () => {
+  const res = await fetch("http://localhost:3000/api/blog", {
+    next: { revalidate: 3600 },
+  });
+
+  if (!res.ok) {
+    throw new Error("Something went wrong");
+  }
+
+  return res.json();
+};
+
+const BlogPage = async () => {
+  const posts = await getData();
   return (
     <div className={styles.container}>
-        <div className={styles.post}>
-        <PostCard />
+      {posts.map((post) => (
+        <div className={styles.post} key={post.id}>
+          <PostCard post={post} />
         </div>
-        <div className={styles.post}>
-        <PostCard />
-        </div>
-        <div className={styles.post}>
-        <PostCard />
-        </div>
-        <div className={styles.post}>
-        <PostCard />
-        </div>
+      ))}
     </div>
-  )
-}
+  );
+};
 
-export default BlogPage
+export default BlogPage;

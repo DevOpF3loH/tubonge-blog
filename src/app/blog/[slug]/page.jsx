@@ -1,42 +1,57 @@
-import React from "react";
+import React, { Suspense } from "react";
 import styles from "./SinglePost.module.css";
 import Image from "next/image";
+import PostUser from "@/components/postUser/PostUser";
+import { getPost } from "@/lib/data";
 
-const SinglePostPage = () => {
+export const generateMetadata = async ({ params }) => {
+  const { slug } = params;
+
+  const post = await getPost(slug);
+
+  return {
+    title: post.title,
+    description: post.desc,
+  };
+};
+
+const getData = async (slug) => {
+  const res = await fetch(`http://localhost:3000/api/blog/${slug}`);
+
+  if (!res.ok) {
+    throw new Error("Something went wrong");
+  }
+
+  return res.json();
+};
+
+const SinglePostPage = async ({ params }) => {
+  const { slug } = params;
+  const post = await getData(slug);
   return (
     <div className={styles.container}>
-      <div className={styles.imgContainer}>
-        <Image
-          className={styles.img}
-          src="https://images.unsplash.com/photo-1708623460319-3f1d8865778a?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-          alt=""
-          fill
-        />
-      </div>
+      {post.img && (
+        <div className={styles.imgContainer}>
+          <Image className={styles.img} src={post.img} alt="" fill />
+        </div>
+      )}
       <div className={styles.textContainer}>
-        <h1 className={styles.title}>Title</h1>
+        <h1 className={styles.title}>{post.title}</h1>
         <div className={styles.detail}>
-          <Image
-            className={styles.avatar}
-            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-            alt=""
-            width={50}
-            height={50}
-          />
-          <div className={styles.detailText}>
-            <span className={styles.detailTitle}>Author</span>
-            <span className={styles.detailValue}>Terry Jefferson</span>
-          </div>
+          {post && (
+            <Suspense fallback={<div>Loading...</div>}>
+              <PostUser userId={post.userId} />
+            </Suspense>
+          )}
           <div className={styles.detailText}>
             <span className={styles.detailTitle}>Published</span>
-            <span className={styles.detailValue}>01.01.2024</span>
+            <span className={styles.detailValue}>
+              {post.createdAt.toString().slice(4, 16)}
+            </span>
           </div>
         </div>
         <div className={styles.content}>
-          Lorem ipsum dolor sit amet, consectetur adipisicing elit. Corporis
-          veniam minus hic nam, obcaecati voluptatem deleniti quo iusto
-          cupiditate, totam maxime. Accusantium libero hic ipsam nobis quisquam
-          nulla rerum laboriosam.
+          {post.desc}
         </div>
       </div>
     </div>

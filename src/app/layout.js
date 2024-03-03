@@ -6,7 +6,10 @@ import Footer from "@/components/footer/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Tubonge Blog App",
+  title: {
+    default:"Tubonge Blog App Homepage",
+    template:"%s | Tubonge Blog App"
+  },
   description: "Experiencing life",
 };
 
